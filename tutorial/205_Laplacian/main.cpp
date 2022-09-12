@@ -42,7 +42,10 @@ int main(int argc, char *argv[])
   K = -G.transpose() * T * G;
   cout<<"|K-L|: "<<(K-L).norm()<<endl;
 
-  const auto &key_down = [](igl::opengl::glfw::Viewer &viewer,unsigned char key,int mod)->bool
+  Eigen::SimplicialLLT<Eigen::SparseMatrix<double > > solver;
+  solver.analyzePattern(L);
+
+  const auto &key_down = [&solver](igl::opengl::glfw::Viewer &viewer,unsigned char key,int mod)->bool
   {
     switch(key)
     {
@@ -57,7 +60,7 @@ int main(int argc, char *argv[])
         igl::massmatrix(U,F,igl::MASSMATRIX_TYPE_BARYCENTRIC,M);
         // Solve (M-delta*L) U = M*U
         const auto & S = (M - 0.001*L);
-        Eigen::SimplicialLLT<Eigen::SparseMatrix<double > > solver(S);
+        solver.factorize(S);
         assert(solver.info() == Eigen::Success);
         U = solver.solve(M*U).eval();
         // Compute centroid and subtract (also important for numerics)

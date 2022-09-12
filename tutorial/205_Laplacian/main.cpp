@@ -10,6 +10,7 @@
 #include <igl/repdiag.h>
 #include <igl/opengl/glfw/Viewer.h>
 
+#include <chrono>
 #include <iostream>
 
 Eigen::MatrixXd V,U;
@@ -55,6 +56,8 @@ int main(int argc, char *argv[])
         break;
       case ' ':
       {
+        auto t0 = std::chrono::system_clock::now();
+
         // Recompute just mass matrix on each step
         SparseMatrix<double> M;
         igl::massmatrix(U,F,igl::MASSMATRIX_TYPE_BARYCENTRIC,M);
@@ -77,6 +80,11 @@ int main(int argc, char *argv[])
         U.rowwise() -= centroid;
         // Normalize to unit surface area (important for numerics)
         U.array() /= sqrt(area);
+
+        auto t1 = std::chrono::system_clock::now();
+        using namespace std::chrono_literals;
+        std::cerr << (t1 - t0) / 1.0s << " seconds\n";
+
         break;
       }
       default:
